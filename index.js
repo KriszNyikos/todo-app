@@ -11,13 +11,15 @@ newInput.addEventListener('keyup', (e) => {
 function addTodo() {
     let newTodo = document.getElementById('todo-input').value
     todoList.push(new TodoItem(newTodo))
-
+    document.getElementById('todo-input').value = ""
+    saveLocalStr()
     createHtmlList()
 }
 
 function delTodo(index) {
     console.log('Delete todo', index)
     todoList.splice(index, 1)
+    saveLocalStr()
     createHtmlList()
 }
 
@@ -36,48 +38,66 @@ function createHtmlList() {
 
 
     todoList.forEach((todo, index) => {
-        let todoHtmlItem = document.createElement('div')
+        let todoHtmlItem = document.createElement('section')
         todoHtmlItem.classList.add('todo-item')
-        todoHtmlItem.draggable = true
-        todoHtmlItem.addEventListener('dragstart', (e)=>{
+        todoHtmlItem.draggable = false
+        todoHtmlItem.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('text', target.id);
+            e.dataTransfer.dropEffect = 'move';
             console.log('dragstart', e.target)
             e.target.style.opacity = 0.5
         })
 
-        todoHtmlItem.addEventListener('dragenter', (e)=>{
-            console.log('dragenter', e.target, index)
-            e.target.style=" background-color: rgb(247, 219, 185);"
-            dragIndex = index
+        todoHtmlItem.addEventListener('dragover', (e) => {
+            e.preventDefault();
         })
 
-        todoHtmlItem.addEventListener('dragend', (e)=>{
+        todoHtmlItem.addEventListener('dragleave', (e) => {
+            dragIndex = null
+            e.target.style = "background-color: rgb(250, 245, 239)"
+            console.log('dragleave', e.target, index, dragIndex)
+
+        })
+
+        todoHtmlItem.addEventListener('dragenter', (e) => {
+
+
+            if (e.target) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move'
+                console.log('dragenter', e.target, index)
+                e.target.style = " background-color: rgb(247, 219, 185);"
+                dragIndex = index
+            }
+
+           
+        })
+
+        todoHtmlItem.addEventListener('dragend', (e) => {
             console.log('dragend', dragIndex)
             e.target.style.opacity = ""
 
-            if(dragIndex){
-                todoList.splice(dragIndex, 0, todo)
+            if (dragIndex !== null) {
+                let copy = new TodoItem(todo.getText(), todo.isDone())
+                todoList.splice(index, 1)
+                todoList.splice(dragIndex, 0,  copy)
             }
 
             createHtmlList()
         })
 
-        todoHtmlItem.addEventListener('dragleave', (e)=>{
-            dragIndex = null
-            e.target.style="background-color: rgb(250, 245, 239)"
-            console.log('dragleave', e.target, index, dragIndex)
-   
-        })
+       
 
-        
+
 
         let text = document.createElement('input')
         let deleteButton = createDelButton(index)
         let radioButton = createCheckbox(todo)
         let modifyButton = createModifyButton(text, todo)
-
+        let bars = createDragIcon(todoHtmlItem)
         text.classList.add('todo-field')
         text.readOnly = true
-        text.style = todo.isDone() ? 'text-decoration: line-through' : ""
+        text.style = todo.isDone() ? 'text-decoration: line-through; flex-grow: 2' : "flex-grow: 2"
         text.value = todo.getText()
         htmlList.appendChild(text)
 
@@ -85,6 +105,7 @@ function createHtmlList() {
         todoHtmlItem.appendChild(radioButton)
         todoHtmlItem.appendChild(deleteButton)
         todoHtmlItem.appendChild(modifyButton)
+        todoHtmlItem.appendChild(bars)
 
 
         htmlList.appendChild(todoHtmlItem)
@@ -98,6 +119,25 @@ function createHtmlList() {
 
 }
 
+function createDragIcon(todoItem) {
+    let bars = document.createElement('i')
+    bars.classList.add('fa')
+    bars.classList.add('fa-bars')
+    bars.classList.add('drag-cursor')
+
+    bars.addEventListener('dragstart', (e)=>{
+        e.stopPropagation()
+    })
+
+    bars.addEventListener('keydown', () => {
+        todoItem.draggable = true
+    })
+
+
+
+    return setTodoItemElement(bars)
+}
+
 function createDelButton(index) {
     let deleteButton = document.createElement('button')
     deleteButton.innerText = 'Delete todo'
@@ -106,7 +146,7 @@ function createDelButton(index) {
         delTodo(index)
     })
 
-    return deleteButton
+    return setTodoItemElement(deleteButton)
 }
 
 function createCheckbox(todo) {
@@ -124,7 +164,7 @@ function createCheckbox(todo) {
     })
 
 
-    return label
+    return setTodoItemElement(label)
 }
 
 function createModifyButton(todoHtmlElement, todo) {
@@ -146,17 +186,28 @@ function createModifyButton(todoHtmlElement, todo) {
         console.log('Modify event', todoHtmlElement)
     })
 
-    return modifButton
+    return setTodoItemElement(modifButton)
 
 }
 
 function createInitialTodos() {
     dummyTodoList = ['Task1', "Task2"]
 
-    dummyTodoList.forEach(t => {
-        let todo = new TodoItem(t)
-        todoList.push(todo)
-    });
+    if(getLocalStr()){
+
+     JSON.parse(getLocalStr()).forEach(t => {
+            let todo = new TodoItem(t.text, t.isDone)
+            todoList.push(todo)
+        });
+
+    } else {
+        dummyTodoList.forEach(t => {
+            let todo = new TodoItem(t)
+            todoList.push(todo)
+        });
+    }
+
+    
 
     createHtmlList()
 }
@@ -165,17 +216,37 @@ function createInitialTodos() {
 
 function sortItems() {
     todoList.sort((a, b) => {
-  
-        if(a.isDone() === b.isDone())return 0
 
-        if(a.isDone() && !b.isDone()) return 1
+        if (a.isDone() === b.isDone()) return 0
 
-        if(!a.isDone() && b.isDone()) return -1
+        if (a.isDone() && !b.isDone()) return 1
+
+        if (!a.isDone() && b.isDone()) return -1
 
     })
 
 
     createHtmlList()
+}
+
+function setTodoItemElement(htmlElement) {
+    htmlElement.classList.add('todo-item-element')
+
+    return htmlElement
+}
+
+function saveLocalStr(){
+    let store = []
+    todoList.forEach((todo)=>{
+        store.push({text: todo.getText(), isDone: todo.isDone()})
+    })
+
+    localStorage.setItem('todos',JSON.stringify(store) )
+
+}
+
+function getLocalStr(){
+   return localStorage.getItem('todos') ? localStorage.getItem('todos') : undefined
 }
 
 class TodoItem {
@@ -184,8 +255,9 @@ class TodoItem {
     done = false
 
 
-    constructor(text) {
+    constructor(text, done) {
         this.todoText = text
+        this.done = done || false
     }
 
     getText() {

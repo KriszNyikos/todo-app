@@ -3,7 +3,7 @@ body {
 }
 
 .main-box {
-    background-color: rgb(250, 245, 239);
+    background-color: rgb(252, 251, 249);
     border: 1px solid rgb(247, 219, 185);
     width: 60%;
     margin: auto;
@@ -19,6 +19,15 @@ body {
 
 #input-field{
     padding-left: 15px;
+}
+
+.drag-cursor{
+    cursor: grab;
+    float: right;
+}
+
+.todo-item-element{
+    flex-grow: 1;
 }
 
 .todo-item{
