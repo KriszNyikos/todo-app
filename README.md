@@ -9,7 +9,7 @@ a. As a user I want to be able to delete to-do items from the list.
 
 3.  Edit to-do:
 - [x] As a user I want to be able to edit the to-do item’s text.
-- [ ] As a user I want to be able to rearrange the order of to-dos with drag and drop.
+- [x] As a user I want to be able to rearrange the order of to-dos with drag and drop.
 - [x] As a user I want to be able to set the done state of the to-do item.
 
 4. [x] Group sorting:

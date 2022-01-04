@@ -1,16 +1,21 @@
 body {
-    background-color: rgb(253, 253, 253);
+    font-family: 'Poppins', sans-serif;
+    background-color: rgb(247, 252, 255);
 }
 
 .main-box {
-    background-color: rgb(252, 251, 249);
-    border: 1px solid rgb(247, 219, 185);
-    width: 60%;
+    background-color: rgb(234, 247, 255);
+    border: 1px solid rgb(144, 199, 231);
+    width: 40%;
     margin: auto;
+    border-radius: 5px;
 }
 
 #todo-title{
-    text-align: center;    
+    font-size: 35px;
+    text-align: center;  
+    margin: 25px;  
+    font-weight: 200;
 }
 
 #todo-body{
@@ -19,10 +24,24 @@ body {
 
 #input-field{
     padding-left: 15px;
+    height: 25px;
 }
 
-.drag-cursor{
-    cursor: grab;
+#input-field button{
+    background-color: rgb(144, 199, 231);
+    border-radius: 5px;
+    border: 1px solid rgb(144, 199, 231);
+}
+
+#todo-input{
+    border: 2px solid rgb(144, 199, 231);
+    background-color: rgb(242, 246, 248);
+    width: 60%;
+    margin-right: 15px;
+    border-radius: 5px;
+}
+
+.drag-cursor{ 
     float: right;
 }
 
@@ -31,6 +50,9 @@ body {
 }
 
 .todo-item{
+    border-radius: 5px;
+    height: 25px;
+    cursor: grab;
     gap: 20px;
     margin: 10px 0;
     padding: 5px 0; 
@@ -39,5 +61,52 @@ body {
     flex-wrap: nowrap;
     justify-content: start;
     align-items: center;
-    border: 1px solid rgb(247, 219, 185);
+    border: 1px solid rgb(144, 199, 231);
+}
+
+.todo-field{
+    flex-grow: 5;
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    gap: 20px ;
+}
+
+.todo-item-field{
+    background-color: rgb(234, 247, 255);
+    width: 75%;
+   border-radius: 5px;
+   border:none
+}
+
+.todo-item-active{
+    background-color: white;
+    border: 1px solid rgb(144, 199, 231);
+}
+
+.todo-field .del-button, .todo-field .modify-button{
+    cursor: pointer;
+    color: rgb(20, 134, 201)
+}
+
+.drag-cursor{
+    flex-grow:1;
+}
+
+.drag-hovered{
+    border: 4px solid rgb(144, 199, 231);
+}
+
+.dragged-item{
+    opacity: 0.5;
+}
+
+.check-box{
+    height: 15px;
+    border: rgb(144, 199, 231);
+    flex-grow: 1;
+}
+
+.check-box{
+    background-color: red
 }

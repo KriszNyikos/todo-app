@@ -27,15 +27,19 @@ let delTodo = (id) => {
 };
 
 let createListItem = (todo) => {
-  let item = `<section id="item-${todo.id}" class="todo-item">
+  let item = `<section id="item-${todo.id}" draggable="true" class="todo-item">
+
     ${createCheckbox(todo)}
-    <input type="text" class="todo-field" name="" readonly id="field-${
-      todo.id
-    }" value="${todo.todoText}">
-    ${createModifyButton(todo.id)}
-    ${createDelButton(todo.id)}
+
+    <div class="todo-field">
+    <input type="text" class="todo-item-field" name="" readonly id="field-${
+        todo.id
+      }" value="${todo.todoText}">
+      ${createModifyButton(todo.id)}
+      ${createDelButton(todo.id)}
+    </div>
+
     ${createDragIcon(todo.id)} 
-    <p>${todo.id}</p>
     </section>`;
 
   return item;
@@ -49,126 +53,110 @@ let createHtmlList = (list) => {
     listItem = createListItem(todo);
     htmlList.innerHTML += listItem;
   });
+
+  setDragNDropEvents()
 };
 
 let dragEndHandle = (e) => {
-    console.log('dragend', e.target.id)
+    console.log('drag end', e.target.id)
 
-  /* console.log('Dragendhandle',e.target.id)
- 
-     e.target.style.opacity = ""
- 
-     console.log('todo list', todoList, dragId)
- 
-     if (dragId !== null && dragSourceIndex !==null) {
- 
-         let todo = undefined
-         let index = null
-         todoList.forEach((t, i) => {
- 
-             if (t.id == dragId) {
-                 todo = t
-                 index = i
-             }
- 
-         })
- 
- 
-         
-         let copy = new TodoItem(todo.getText(), todo.done)
- 
-         console.log('dragend', todo, index, dragId, copy)
-         todoList.splice(dragSourceIndex, 1)
-         todoList.splice(index, 0, copy)
-     }
- 
-     createHtmlList(todoList)*/
+  if (e.target) {
+    let item = document.getElementById(`item-${e.target.id.split("-")[1]}`);
+    item.classList.remove("dragged-item");
+  }
 };
-
-let replaceItems = () => {};
 
 let dragStartHandle = (e) => {
 
-    console.log('dragstart', e.target.id)
-
-  let sid = null;
-
+  let sid = null
   let sindex = null;
 
   todoList.forEach((todo, index) => {
     if (todo.id === parseInt(e.target.id.split("-")[1])) {
       sid = e.target.id.split("-")[1];
       sindex = index;
-
-      console.log("find", sid, sindex);
     }
   });
 
+  e.target.classList.add("dragged-item");
   sourceId = sid;
   sourceIndex = sindex;
 
-  console.log("dragstart habi", sourceId, sourceIndex);
-
-  e.dataTransfer.setData("text", e.target.id);
-  e.dataTransfer.dropEffect = "move";
-  //console.log('dragstart', e.target, e.target.id, dragSourceIndex)
-  e.target.style.opacity = 0.5;
-};
-
-let dragOverHandle = (e) => {
-    console.log('dragover', e.target.id)
-  e.preventDefault();
-  e.target.style = " background-color: rgb(247, 219, 185);";
 };
 
 let dragEnterHandle = (e) => {
-    console.log('dragenter')
+  console.log("dragenter", e.target.id);
+
+  if (e.target) {
+    let item = document.getElementById(`item-${e.target.id.split("-")[1]}`);
+    console.log("drag enter", e.target.id, `item-${e.target.id.split("-")[1]}`);
+    item.classList.add("drag-hovered");
+    e.preventDefault();
+  }
   
-        if (e.target) {
-            e.preventDefault();
-            console.log('drag enter', e.target.id)
-          e.target.style = " background-color: rgb(247, 219, 185);"
-        }
 };
 
 let dragLeaveHandle = (e) => {
-    console.log('dragleave')
-  e.target.style = "background-color: rgb(250, 245, 239)";
-  e.preventDefault()
-};
-
-let onDropHandle = (e) => {
-  console.log("drop", e.target.id);
-
-  e.target.style.opacity = "";
-
-  console.log("todo list", todoList, sourceId);
-
-  if (sourceId !== null && sourceIndex !== null) {
-    let todo = undefined;
-    let index = null;
-    todoList.forEach((t, i) => {
-      if (t.id == sourceId) {
-        todo = t;
-        index = i;
-      }
-    });
-
-    let copy = new TodoItem(todo.getText(), todo.done);
-
-    //  console.log('dragend', todo, index, dragId, copy)
-    todoList.splice(sourceIndex, 1);
-    todoList.splice(index, 0, copy);
+  console.log("dragleave");
+  if (e.target) {
+    let item = document.getElementById(`item-${e.target.id.split("-")[1]}`);
+    e.preventDefault();
+    console.log("drag enter", item);
+    item.classList.remove("drag-hovered");
   }
 
-  createHtmlList(todoList);
-
   e.preventDefault();
+};
+
+let dragOverHandle = (e)=>{
+    if (e.target) {
+        let item = document.getElementById(`item-${e.target.id.split("-")[1]}`);
+        console.log("drag enter", e.target.id, `item-${e.target.id.split("-")[1]}`);
+        item.classList.add("drag-hovered");
+        e.preventDefault();
+      }
+}
+
+let onDropHandle = (e) => {
+  console.log("drop", e.target.id, sourceIndex, sourceId);
+  e.target.style.opacity = "";
+
+  todoList = replaceTodos(todoList, parseInt(e.target.id.split("-")[1]));
+
+  console.log(" drag drop todo list", todoList);
+
+  createHtmlList(todoList);
+  saveLocalStr(todoList);
+};
+
+let replaceTodos = (list, targetId) => {
+  let dropIndex = list.findIndex((t) => {
+    return t.id === targetId;
+  });
+
+  let sourceItem = list.find((t) => {
+    return t.id === parseInt(sourceId);
+  });
+
+  if (dropIndex === 1 && sourceIndex === 0) {
+    let dropped = list.splice(dropIndex, 1, sourceItem)[0];
+    list[0] = dropped;
+  } else {
+    if (dropIndex < sourceIndex) {
+      list.splice(dropIndex, 0, sourceItem);
+      list.splice(sourceIndex + 1, 1);
+    } else {
+      list.splice(sourceIndex, 1);
+      list.splice(dropIndex, 0, sourceItem);
+    }
+  }
+
+  return list;
 };
 
 setDragNDropEvents = () => {
   let listItems = document.querySelectorAll(".todo-item");
-  let dragItems = document.querySelectorAll(".drag-item");
+
 
   listItems.forEach((item) => {
     dragNDropEvents.forEach((event) => {
@@ -176,11 +164,6 @@ setDragNDropEvents = () => {
     });
   });
 
-  dragItems.forEach((item) => {
-    dragNDropEvents.forEach((event) => {
-      item.addEventListener(event.type, event.method);
-    });
-  });
 };
 
 let dragNDropEvents = [
@@ -210,15 +193,40 @@ let createDragIcon = (id) => {
 };
 
 function createDelButton(id) {
-  let item = `<i class="fa fa-trash todo-item-element" onclick="delTodo(${id})"></i>`;
+  let item = `<i class="fa fa-trash todo-item-element del-button" onclick="delTodo(${id})"></i>`;
   return item;
 }
 
-function createCheckbox(todo) {
-  console.log("Create checkbox", todo.id, todo.done);
+createModifyButton = (id) => {
+    let item = `<i class="fa fa-pencil modify-button" onclick="modifyButtonHandler(${id})"></i>`;
+  
+    return item;
+  };
+
+  modifyButtonHandler = (id) => {
+    let input = document.getElementById(`field-${id}`);
+    input.classList.add('todo-item-active')
+    input.readOnly = false;
+    let todo = todoList.find((todo) => {
+      return todo.id === id ? true : false;
+    });
+  
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        todo.changeText(input.value);
+        input.readOnly = true;
+        input.classList.remove('todo-item-active')
+        saveLocalStr(todoList)
+        createHtmlList(todoList);
+      }
+    });
+  };
+
+createCheckbox = (todo) => {
+
 
   let item = `
-    <input class="todo-item-element" ${
+    <input class="todo-item-element check-box" ${
       todo.done ? "checked" : undefined
     } type="checkbox" name="checkBox" id="check-${
     todo.id
@@ -241,29 +249,9 @@ checkBoxChangeHandle = (id) => {
   createHtmlList(todoList);
 };
 
-createModifyButton = (id) => {
-  let item = `<i class="fa fa-pencil" draggable="false" onclick="modifyButtonHandler(${id})"></i>`;
 
-  return item;
-};
 
-modifyButtonHandler = (id) => {
-  let input = document.getElementById(`field-${id}`);
-  input.style = "background-color: red";
-  input.readOnly = false;
-  let todo = todoList.find((todo) => {
-    return todo.id === id ? true : false;
-  });
 
-  input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      todo.changeText(input.value);
-      input.readOnly = true;
-      input.style = "";
-      createHtmlList(todoList);
-    }
-  });
-};
 
 let createInitialTodos = () => {
   dummyTodoList = ["Task1", "Task2"];
@@ -292,6 +280,7 @@ let sortItems = () => {
     if (!a.done && b.done) return -1;
   });
 
+  saveLocalStr(todoList)
   createHtmlList(todoList);
 };
 
@@ -314,7 +303,6 @@ class TodoItem {
   id = null;
   todoText = "";
   done = false;
-  draggable = false;
 
   constructor(text, done, id) {
     this.todoText = text;
