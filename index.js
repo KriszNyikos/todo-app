@@ -1,5 +1,6 @@
 let todoList = []
-let dragIndex = null
+let sourceId = null
+let sourceIndex = null
 
 let newInput = document.getElementById('todo-input')
 newInput.addEventListener('keyup', (e) => {
@@ -8,195 +9,298 @@ newInput.addEventListener('keyup', (e) => {
     }
 })
 
-function addTodo() {
+let addTodo = () => {
     let newTodo = document.getElementById('todo-input').value
     todoList.push(new TodoItem(newTodo))
     document.getElementById('todo-input').value = ""
-    saveLocalStr()
-    createHtmlList()
+    saveLocalStr(todoList)
+    createHtmlList(todoList)
 }
 
-function delTodo(index) {
-    console.log('Delete todo', index)
-    todoList.splice(index, 1)
-    saveLocalStr()
-    createHtmlList()
+let delTodo = (id) => {
+    todoList = todoList.filter((todo) => {
+        return (todo.id !== id) ? true : false
+    })
+    console.log("Filtered", todoList)
+    saveLocalStr(todoList)
+    createHtmlList(todoList)
+}
+
+let createListItem = (todo) => {
+
+    let item = `<section id="item-${todo.id}" class="todo-item">
+    ${createCheckbox(todo)}
+    <input type="text" class="todo-field" name="" readonly id="field-${todo.id}" value="${todo.todoText}">
+    ${createModifyButton(todo.id)}
+    ${createDelButton(todo.id)}
+    ${createDragIcon(todo.id)} 
+    <p>${todo.id}</p>
+    </section>`
+
+    return item
 }
 
 
-function createHtmlList() {
+
+let createHtmlList = (list) => {
+    let htmlList = document.getElementById('todo-list')
+    htmlList.innerHTML = null
+
+    list.forEach((todo) => {
+        listItem = createListItem(todo)
+        htmlList.innerHTML += listItem
+    });
+}
 
 
+let dragEndHandle = (e) => {
 
+   /* console.log('Dragendhandle',e.target.id)
 
-    let htmlBody = document.getElementById('todo-body')
-    htmlBody.innerHTML = null
+    e.target.style.opacity = ""
 
+    console.log('todo list', todoList, dragId)
 
+    if (dragId !== null && dragSourceIndex !==null) {
 
-    let htmlList = document.createElement('div')
+        let todo = undefined
+        let index = null
+        todoList.forEach((t, i) => {
 
-
-    todoList.forEach((todo, index) => {
-        let todoHtmlItem = document.createElement('section')
-        todoHtmlItem.classList.add('todo-item')
-        todoHtmlItem.draggable = false
-        todoHtmlItem.addEventListener('dragstart', (e) => {
-            e.dataTransfer.setData('text', target.id);
-            e.dataTransfer.dropEffect = 'move';
-            console.log('dragstart', e.target)
-            e.target.style.opacity = 0.5
-        })
-
-        todoHtmlItem.addEventListener('dragover', (e) => {
-            e.preventDefault();
-        })
-
-        todoHtmlItem.addEventListener('dragleave', (e) => {
-            dragIndex = null
-            e.target.style = "background-color: rgb(250, 245, 239)"
-            console.log('dragleave', e.target, index, dragIndex)
-
-        })
-
-        todoHtmlItem.addEventListener('dragenter', (e) => {
-
-
-            if (e.target) {
-                e.preventDefault();
-                e.dataTransfer.dropEffect = 'move'
-                console.log('dragenter', e.target, index)
-                e.target.style = " background-color: rgb(247, 219, 185);"
-                dragIndex = index
+            if (t.id == dragId) {
+                todo = t
+                index = i
             }
 
-           
         })
 
-        todoHtmlItem.addEventListener('dragend', (e) => {
-            console.log('dragend', dragIndex)
-            e.target.style.opacity = ""
 
-            if (dragIndex !== null) {
-                let copy = new TodoItem(todo.getText(), todo.isDone())
-                todoList.splice(index, 1)
-                todoList.splice(dragIndex, 0,  copy)
+        
+        let copy = new TodoItem(todo.getText(), todo.done)
+
+        console.log('dragend', todo, index, dragId, copy)
+        todoList.splice(dragSourceIndex, 1)
+        todoList.splice(index, 0, copy)
+    }
+
+    createHtmlList(todoList)*/
+}
+
+let replaceItems = () => {
+
+}
+
+let dragStartHandle = (e) => {
+
+    
+
+
+
+    let sid = null
+
+    let sindex = null
+
+    todoList.forEach((todo, index)=>{
+        if(todo.id === parseInt(e.target.id.split('-')[1]))
+        {
+            
+            sid = e.target.id.split('-')[1]
+            sindex = index
+
+            console.log('find', sid, sindex)
+        }
+    })
+
+    sourceId = sid
+    sourceIndex = sindex
+
+    console.log("dragstart habi", sourceId, sourceIndex)
+
+
+
+    e.dataTransfer.setData('text', e.target.id);
+    e.dataTransfer.dropEffect = 'move';
+    //console.log('dragstart', e.target, e.target.id, dragSourceIndex)
+    e.target.style.opacity = 0.5
+}
+
+let dragOverHandle = (e) => {
+    e.preventDefault();
+    e.target.style = " background-color: rgb(247, 219, 185);"
+}
+
+
+let dragEnterHandle = (e) => {
+/*
+    if (e.target) {
+        e.preventDefault();
+        let id = e.target.id.split('-')[1]
+        console.log('drag enter', id)
+      //  e.target.style = " background-color: rgb(247, 219, 185);"
+    }*/
+}
+
+let dragLeaveHandle = (e) => {
+    e.target.style = "background-color: rgb(250, 245, 239)"
+
+}
+
+let onDropHandle = (e)=>{
+
+
+    console.log('drop',e.target.id)
+
+    e.target.style.opacity = ""
+
+    console.log('todo list', todoList, sourceId)
+
+    if (sourceId !== null && sourceIndex !==null) {
+
+        let todo = undefined
+        let index = null
+        todoList.forEach((t, i) => {
+
+            if (t.id == sourceId) {
+                todo = t
+                index = i
             }
 
-            createHtmlList()
         })
 
-       
 
+        
+        let copy = new TodoItem(todo.getText(), todo.done)
 
+      //  console.log('dragend', todo, index, dragId, copy)
+        todoList.splice(sourceIndex, 1)
+        todoList.splice(index, 0, copy)
+    }
 
-        let text = document.createElement('input')
-        let deleteButton = createDelButton(index)
-        let radioButton = createCheckbox(todo)
-        let modifyButton = createModifyButton(text, todo)
-        let bars = createDragIcon(todoHtmlItem)
-        text.classList.add('todo-field')
-        text.readOnly = true
-        text.style = todo.isDone() ? 'text-decoration: line-through; flex-grow: 2' : "flex-grow: 2"
-        text.value = todo.getText()
-        htmlList.appendChild(text)
+    createHtmlList(todoList)
 
-        todoHtmlItem.appendChild(text)
-        todoHtmlItem.appendChild(radioButton)
-        todoHtmlItem.appendChild(deleteButton)
-        todoHtmlItem.appendChild(modifyButton)
-        todoHtmlItem.appendChild(bars)
+    e.preventDefault()
+}
 
+setDragNDropEvents = () => {
 
-        htmlList.appendChild(todoHtmlItem)
+    let listItems = document.querySelectorAll(".todo-item")
+    let dragItems = document.querySelectorAll(".drag-item")
+
+    listItems.forEach(item => {
+        dragNDropEvents.forEach(event => {
+            item.addEventListener(event.type, event.method)
+        })
     })
 
-
-
-    htmlBody.appendChild(htmlList)
-
-
+    dragItems.forEach(item => {
+        dragNDropEvents.forEach(event => {
+            item.addEventListener(event.type, event.method)
+        })
+    })
 
 }
 
-function createDragIcon(todoItem) {
-    let bars = document.createElement('i')
-    bars.classList.add('fa')
-    bars.classList.add('fa-bars')
-    bars.classList.add('drag-cursor')
+let dragNDropEvents = [
+    { type: 'dragend', method: (e) => dragEndHandle(e) },
+    { type: 'dragstart', method: (e) => dragStartHandle(e) },
+    { type: 'dragover', method: (e) => dragOverHandle(e) },
+    { type: 'dragenter', method: (e) => dragEnterHandle(e) },
+    { type: 'drop', method: (e) => onDropHandle(e) }
+]
 
-    bars.addEventListener('dragstart', (e)=>{
-        e.stopPropagation()
-    })
-
-    bars.addEventListener('keydown', () => {
-        todoItem.draggable = true
-    })
-
-
-
-    return setTodoItemElement(bars)
+let barDragStartHandle = (e) => {
+    alert("dragstart")
 }
 
-function createDelButton(index) {
-    let deleteButton = document.createElement('button')
-    deleteButton.innerText = 'Delete todo'
+let barMouseDownHandle = (id) => {
+    let todoItem = document.getElementById(`item-${id}`)
+    console.log('Keydown', todoItem)
+    todoItem.style = "background-color: red"
+   // todoItem.draggable = true
+}
 
-    deleteButton.addEventListener('click', () => {
-        delTodo(index)
-    })
 
-    return setTodoItemElement(deleteButton)
+
+
+
+
+
+let createDragIcon = (id) => {
+    let item = ` <i id="drag-${id}" class="fa fa-bars drag-cursor todo-item-element"></i>`
+
+    return item
+}
+
+function createDelButton(id) {
+    let item = `<i class="fa fa-trash todo-item-element" onclick="delTodo(${id})"></i>`
+    return item
 }
 
 function createCheckbox(todo) {
-    let label = document.createElement('label')
-    label.innerText = "Done"
-    let checkBox = document.createElement('input')
-    label.appendChild(checkBox)
-    checkBox.setAttribute('type', 'checkbox')
-    checkBox.value = 'Done'
-    checkBox.checked = todo.isDone()
+    console.log('Create checkbox', todo.id, todo.done)
 
-    checkBox.addEventListener('change', () => {
-        todo.toogleFinished()
-        createHtmlList()
-    })
+    let item = `
+    <input class="todo-item-element" ${todo.done ? "checked" : undefined} type="checkbox" name="checkBox" id="check-${todo.id}" onchange="checkBoxChangeHandle(${todo.id})">`
 
 
-    return setTodoItemElement(label)
+    return item
 }
 
-function createModifyButton(todoHtmlElement, todo) {
 
-    let modifButton = document.createElement('button')
-    modifButton.innerText = 'Modify todo'
 
-    modifButton.addEventListener('click', () => {
+checkBoxChangeHandle = (id) => {
 
-        todoHtmlElement.readOnly = false
+    todoList = todoList.map((todo) => {
 
-        todoHtmlElement.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                alert(todoHtmlElement.value)
-                todo.changeText(todoHtmlElement.value)
-                createHtmlList()
-            }
-        })
-        console.log('Modify event', todoHtmlElement)
+        if (todo.id === id) {
+            todo.toogleFinished()
+        }
+
+        return todo
     })
 
-    return setTodoItemElement(modifButton)
+    saveLocalStr(todoList)
+
+    createHtmlList(todoList)
 
 }
+
+
+createModifyButton = (id) => {
+
+    let item = `<i class="fa fa-pencil" draggable="false" onclick="modifyButtonHandler(${id})"></i>`
+
+    return item
+
+}
+
+modifyButtonHandler = (id) => {
+    let input = document.getElementById(`field-${id}`)
+    input.style = "background-color: red"
+    input.readOnly = false
+    let todo = todoList.find((todo) => {
+        return todo.id === id ? true : false
+    })
+
+    input.addEventListener('keydown', (e) => {
+
+        if (e.key === 'Enter') {
+            todo.changeText(input.value)
+            input.readOnly = true
+            input.style = ""
+            createHtmlList(todoList)
+        }
+    })
+}
+
 
 function createInitialTodos() {
     dummyTodoList = ['Task1', "Task2"]
 
-    if(getLocalStr()){
+    if (getLocalStr()) {
 
-     JSON.parse(getLocalStr()).forEach(t => {
-            let todo = new TodoItem(t.text, t.isDone)
+        JSON.parse(getLocalStr()).forEach(t => {
+            let todo = new TodoItem(t.text, t.isDone, t.id)
             todoList.push(todo)
         });
 
@@ -207,9 +311,7 @@ function createInitialTodos() {
         });
     }
 
-    
-
-    createHtmlList()
+    createHtmlList(todoList)
 }
 
 
@@ -217,61 +319,54 @@ function createInitialTodos() {
 function sortItems() {
     todoList.sort((a, b) => {
 
-        if (a.isDone() === b.isDone()) return 0
+        if (a.done === b.done) return 0
 
-        if (a.isDone() && !b.isDone()) return 1
+        if (a.done && !b.done) return 1
 
-        if (!a.isDone() && b.isDone()) return -1
+        if (!a.done && b.done) return -1
 
     })
 
 
-    createHtmlList()
+    createHtmlList(todoList)
 }
 
-function setTodoItemElement(htmlElement) {
-    htmlElement.classList.add('todo-item-element')
 
-    return htmlElement
-}
-
-function saveLocalStr(){
+function saveLocalStr(list) {
     let store = []
-    todoList.forEach((todo)=>{
-        store.push({text: todo.getText(), isDone: todo.isDone()})
+    list.forEach((todo) => {
+        store.push({ text: todo.getText(), isDone: todo.done, id: todo.id })
     })
 
-    localStorage.setItem('todos',JSON.stringify(store) )
+    localStorage.setItem('todos', JSON.stringify(store))
 
 }
 
-function getLocalStr(){
-   return localStorage.getItem('todos') ? localStorage.getItem('todos') : undefined
+function getLocalStr() {
+    return localStorage.getItem('todos') ? localStorage.getItem('todos') : undefined
 }
 
 class TodoItem {
 
+    id = null
     todoText = ""
     done = false
+    draggable = false
 
 
-    constructor(text, done) {
+    constructor(text, done, id) {
         this.todoText = text
         this.done = done || false
+        this.id = id || (Math.round(Math.random() * 1000))
     }
 
     getText() {
         return this.todoText
     }
 
-    isDone() {
-        return this.done
-    }
-
     toogleFinished() {
         this.done = !this.done
     }
-
 
     changeText(newText) {
         this.todoText = newText

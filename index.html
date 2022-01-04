@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -8,8 +9,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="mystyle.css">
 </head>
+
 <body>
-    
+
     <div class="main-box">
 
         <div id="todo-title">
@@ -23,13 +25,32 @@
         </div>
 
         <div id="todo-body">
+            <div id="todo-list">
+
+            </div>
 
         </div>
 
     </div>
-    <script src="index.js"  type="text/javascript"></script>
-    <script  type="text/javascript">
+
+
+
+    <script src="index.js" type="text/javascript"></script>
+    <script type="text/javascript">
+
         createInitialTodos()
+
+        document.addEventListener('DOMContentLoaded', (e) => {
+
+    console.log(`Document is ready!`);
+    setDragNDropEvents()
+})
+
     </script>
+
+    
+
+
 </body>
+
 </html>
