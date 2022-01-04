@@ -52,6 +52,8 @@ let createHtmlList = (list) => {
 };
 
 let dragEndHandle = (e) => {
+    console.log('dragend', e.target.id)
+
   /* console.log('Dragendhandle',e.target.id)
  
      e.target.style.opacity = ""
@@ -86,6 +88,9 @@ let dragEndHandle = (e) => {
 let replaceItems = () => {};
 
 let dragStartHandle = (e) => {
+
+    console.log('dragstart', e.target.id)
+
   let sid = null;
 
   let sindex = null;
@@ -111,22 +116,25 @@ let dragStartHandle = (e) => {
 };
 
 let dragOverHandle = (e) => {
+    console.log('dragover', e.target.id)
   e.preventDefault();
   e.target.style = " background-color: rgb(247, 219, 185);";
 };
 
 let dragEnterHandle = (e) => {
-  /*
+    console.log('dragenter')
+  
         if (e.target) {
             e.preventDefault();
-            let id = e.target.id.split('-')[1]
-            console.log('drag enter', id)
-          //  e.target.style = " background-color: rgb(247, 219, 185);"
-        }*/
+            console.log('drag enter', e.target.id)
+          e.target.style = " background-color: rgb(247, 219, 185);"
+        }
 };
 
 let dragLeaveHandle = (e) => {
+    console.log('dragleave')
   e.target.style = "background-color: rgb(250, 245, 239)";
+  e.preventDefault()
 };
 
 let onDropHandle = (e) => {
@@ -180,6 +188,7 @@ let dragNDropEvents = [
   { type: "dragstart", method: (e) => dragStartHandle(e) },
   { type: "dragover", method: (e) => dragOverHandle(e) },
   { type: "dragenter", method: (e) => dragEnterHandle(e) },
+  { type: "dragleave", method: (e) => dragLeaveHandle(e) },
   { type: "drop", method: (e) => onDropHandle(e) },
 ];
 
