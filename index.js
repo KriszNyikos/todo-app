@@ -11,7 +11,7 @@ newInput.addEventListener("keyup", (e) => {
 
 let addTodo = () => {
   let newTodo = document.getElementById("todo-input").value;
-  todoList.push(new TodoItem(newTodo));
+  todoList.push(new TodoItem(newTodo, false , createUniqId(todoList)));
   document.getElementById("todo-input").value = "";
   saveLocalStr(todoList);
   createHtmlList(todoList);
@@ -87,17 +87,20 @@ let dragStartHandle = (e) => {
 let dragEnterHandle = (e) => {
   console.log("dragenter", e.target.id);
 
+
   if (e.target) {
+    e.preventDefault();
     let item = document.getElementById(`item-${e.target.id.split("-")[1]}`);
     console.log("drag enter", e.target.id, `item-${e.target.id.split("-")[1]}`);
     item.classList.add("drag-hovered");
-    e.preventDefault();
+
   }
   
 };
 
 let dragLeaveHandle = (e) => {
   console.log("dragleave");
+
   if (e.target) {
     let item = document.getElementById(`item-${e.target.id.split("-")[1]}`);
     e.preventDefault();
@@ -105,15 +108,14 @@ let dragLeaveHandle = (e) => {
     item.classList.remove("drag-hovered");
   }
 
-  e.preventDefault();
 };
 
 let dragOverHandle = (e)=>{
     if (e.target) {
+      e.preventDefault()
         let item = document.getElementById(`item-${e.target.id.split("-")[1]}`);
         console.log("drag enter", e.target.id, `item-${e.target.id.split("-")[1]}`);
         item.classList.add("drag-hovered");
-        e.preventDefault();
       }
 }
 
@@ -130,28 +132,30 @@ let onDropHandle = (e) => {
 };
 
 let replaceTodos = (list, targetId) => {
-  let dropIndex = list.findIndex((t) => {
+
+  let innerList = [...list]    
+  let dropIndex = innerList.findIndex((t) => {
     return t.id === targetId;
   });
 
-  let sourceItem = list.find((t) => {
+  let sourceItem = innerList.find((t) => {
     return t.id === parseInt(sourceId);
   });
 
   if (dropIndex === 1 && sourceIndex === 0) {
-    let dropped = list.splice(dropIndex, 1, sourceItem)[0];
-    list[0] = dropped;
+    let dropped = innerList.splice(dropIndex, 1, sourceItem)[0];
+    innerList[0] = dropped;
   } else {
     if (dropIndex < sourceIndex) {
-      list.splice(dropIndex, 0, sourceItem);
-      list.splice(sourceIndex + 1, 1);
+      innerList.splice(dropIndex, 0, sourceItem);
+      innerList.splice(sourceIndex + 1, 1);
     } else {
-      list.splice(sourceIndex, 1);
-      list.splice(dropIndex, 0, sourceItem);
+      innerList.splice(sourceIndex, 1);
+      innerList.splice(dropIndex, 0, sourceItem);
     }
   }
 
-  return list;
+  return [...innerList];
 };
 
 setDragNDropEvents = () => {
@@ -263,7 +267,7 @@ let createInitialTodos = () => {
     });
   } else {
     dummyTodoList.forEach((t) => {
-      let todo = new TodoItem(t);
+      let todo = new TodoItem(t, false, createUniqId(todoList));
       todoList.push(todo);
     });
   }
@@ -299,6 +303,12 @@ let getLocalStr = () => {
     : undefined;
 };
 
+let createUniqId = (checkedList) =>{
+    let id = Math.round(Math.random() * 1000)
+
+   return !(checkedList.includes(id)) ? id: createUniqId(checkedList)
+}
+
 class TodoItem {
   id = null;
   todoText = "";
@@ -307,7 +317,7 @@ class TodoItem {
   constructor(text, done, id) {
     this.todoText = text;
     this.done = done || false;
-    this.id = id || Math.round(Math.random() * 1000);
+    this.id = id; 
   }
 
   getText() {

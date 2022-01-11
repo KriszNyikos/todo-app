@@ -25,3 +25,6 @@ whether it is done or not.
 - [x] I would like You to save the data of the application to the localStorage, so when we 
 refresh the page the data is not lost.
 Should You have any questions, please do not hesitate to ask them.
+
+### Added unit test cases
+- [x] For checking the cases open the Specrunner.html 

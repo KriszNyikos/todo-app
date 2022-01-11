@@ -79,6 +79,10 @@ body {
    border:none
 }
 
+input:focus-visible{
+    outline: none
+}
+
 .todo-item-active{
     background-color: white;
     border: 1px solid rgb(144, 199, 231);
